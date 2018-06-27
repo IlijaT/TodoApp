@@ -24,4 +24,5 @@ Route::group([
 
 });
 
-Route::apiResource('/tasks', "TasksController");
+Route::apiResource('/tasks', 'TasksController');
+

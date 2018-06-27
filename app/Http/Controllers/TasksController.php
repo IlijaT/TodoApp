@@ -14,7 +14,9 @@ class TasksController extends Controller
      */
     public function index()
     {
-        //
+        $tasks = Task::all();
+
+        return  $tasks;
     }
 
     /**
@@ -35,7 +37,15 @@ class TasksController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $newTask = new Task;
+
+        $newTask->title = $request->input('title');
+        $newTask->description = $request->input('description');
+        $newTask->priority = $request->input('priority');
+
+        if($newTask->save()) {
+            return $newTask;
+        }
     }
 
     /**
@@ -46,7 +56,9 @@ class TasksController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        $newTask = Task::find($task->id);
+
+        return $newTask;
     }
 
     /**
@@ -78,8 +90,15 @@ class TasksController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Task $task)
+    public function destroy($id)
     {
-        //
+        $task = Task::findOrFail($id);
+
+        if($task->delete()){
+            return $task;
+        }
+
+
+
     }
 }

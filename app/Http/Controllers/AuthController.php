@@ -18,18 +18,17 @@ class AuthController extends Controller
     }
 
 
-    public function register(array $userData)
+    public function register()
     {
+        $user = User::create([
+            'name' => request()->get('name'),
+            'email' => request()->get('email'),
+            'password' => bcrypt(request()->get('password')),
+       ]);
 
-        $user = new User();
-        $user->name = array_get($userData, 'name');
-        $user->email = array_get($userData, 'email');
-        $user->password = \Hash::make(array_get($userData, 'password'));
-        
-        if ($user->save()) {
-            return $this->login();
-        }
-        return response()->json(['error' => 'Something wrong has happened'], 500);
+       $token = JWTAuth::fromUser($user);
+       return $this->respondWithToken($token);
+       
     }
 
     /**
