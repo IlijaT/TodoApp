@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\User;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 
 class AuthController extends Controller
 {
@@ -14,7 +18,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register', 'me']]);
     }
 
 
@@ -25,6 +29,8 @@ class AuthController extends Controller
             'email' => request()->get('email'),
             'password' => bcrypt(request()->get('password')),
        ]);
+
+       \Log::info($user);
 
        $token = JWTAuth::fromUser($user);
        return $this->respondWithToken($token);
@@ -92,7 +98,6 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60,
-            'user' => auth()->user()->name
 
         ]);
     }

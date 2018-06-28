@@ -4,9 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Task;
 use Illuminate\Http\Request;
+use Auth;
 
 class TasksController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -14,19 +21,9 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $tasks = Task::all();
-
-        return  $tasks;
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $user = Auth::user();
+        $tasks = Task::where('user_id', $user->id)->get();
+        return response()->json(['tasks' =>  $tasks], 200);
     }
 
     /**
@@ -37,15 +34,17 @@ class TasksController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        
         $newTask = new Task;
 
         $newTask->title = $request->input('title');
         $newTask->description = $request->input('description');
         $newTask->priority = $request->input('priority');
+        $newTask->user_id = $user->id;
+        $newTask->save();
 
-        if($newTask->save()) {
-            return $newTask;
-        }
+        return response()->json(['task' =>  $newTask], 201);
     }
 
     /**
@@ -54,22 +53,15 @@ class TasksController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(Task $task)
+    public function show($id)
     {
-        $newTask = Task::find($task->id);
+        $taskToShow = Task::find($id);
 
-        return $newTask;
-    }
+        if(!$taskToShow){
+            return response()->json(['message' =>  'Task not found'], 404); 
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Task  $task
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Task $task)
-    {
-        //
+        return response()->json(['task' =>  $taskToShow], 200);
     }
 
     /**
@@ -79,9 +71,24 @@ class TasksController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Task $task)
+    public function update(Request $request, $id)
     {
-        //
+        $user = Auth::user();
+        $taskForUpdate = Task::find($id);
+
+        if(!$taskForUpdate){
+            return response()->json(['message' =>  'Task not found'], 404); 
+        }
+
+        $taskForUpdate->title = $request->input('title');
+        $taskForUpdate->description = $request->input('description');
+        $taskForUpdate->priority = $request->input('priority');
+        $taskForUpdate->is_done = $request->input('is_done');
+        $taskForUpdate->user_id = $user->id;
+        $taskForUpdate->save();
+
+        return response()->json(['task' =>  $taskForUpdate], 200);
+
     }
 
     /**
@@ -92,13 +99,8 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        $task = Task::findOrFail($id);
-
-        if($task->delete()){
-            return $task;
-        }
-
-
-
+        $task = Task::find($id);
+        $task->delete();
+        return response()->json(['message' =>  'Task deleted'], 200);
     }
 }
