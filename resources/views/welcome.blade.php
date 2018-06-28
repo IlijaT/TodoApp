@@ -79,7 +79,7 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    Laravel
+                    To-do Application
                 </div>
 
                 <div class="links">
