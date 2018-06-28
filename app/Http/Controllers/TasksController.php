@@ -21,9 +21,7 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        $tasks = Task::where('user_id', $user->id)->get();
-        return response()->json(['tasks' =>  $tasks], 200);
+        return Auth::user()->tasks;
     }
 
     /**
@@ -34,17 +32,8 @@ class TasksController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
-        
-        $newTask = new Task;
-
-        $newTask->title = $request->input('title');
-        $newTask->description = $request->input('description');
-        $newTask->priority = $request->input('priority');
-        $newTask->user_id = $user->id;
-        $newTask->save();
-
-        return response()->json(['task' =>  $newTask], 201);
+        $request->request->add(['user_id' => Auth::id()]);
+        return Task::create($request->all());
     }
 
     /**
@@ -55,13 +44,7 @@ class TasksController extends Controller
      */
     public function show($id)
     {
-        $taskToShow = Task::find($id);
-
-        if(!$taskToShow){
-            return response()->json(['message' =>  'Task not found'], 404); 
-        }
-
-        return response()->json(['task' =>  $taskToShow], 200);
+        return Task::findOrFail($id);
     }
 
     /**
@@ -73,21 +56,7 @@ class TasksController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = Auth::user();
-        $taskForUpdate = Task::find($id);
-
-        if(!$taskForUpdate){
-            return response()->json(['message' =>  'Task not found'], 404); 
-        }
-
-        $taskForUpdate->title = $request->input('title');
-        $taskForUpdate->description = $request->input('description');
-        $taskForUpdate->priority = $request->input('priority');
-        $taskForUpdate->is_done = $request->input('is_done');
-        $taskForUpdate->user_id = $user->id;
-        $taskForUpdate->save();
-
-        return response()->json(['task' =>  $taskForUpdate], 200);
+        return Task::findOrFail($id)->update($request->all());
 
     }
 
@@ -99,8 +68,6 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        $task = Task::find($id);
-        $task->delete();
-        return response()->json(['message' =>  'Task deleted'], 200);
+        return Task::destroy($id);
     }
 }
